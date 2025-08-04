@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sameer Cushion Works Invoice</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f0f0f0;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      background: yellow;
+      padding: 10px;
+      text-align: center;
+    }
+    .form-group {
+      margin-bottom: 10px;
+    }
+    label {
+      display: block;
+      font-weight: bold;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 4px;
+      box-sizing: border-box;
+    }
+    button {
+      padding: 10px 20px;
+      font-weight: bold;
+      background-color: #333;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .invoice {
+      margin-top: 30px;
+      border: 1px solid #000;
+      padding: 15px;
+      min-height: 900px;
+    }
+    table {
+      width: 100%;
+      height: 500px;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    td, th {
+      border: 1px solid #000;
+      padding: 8px;
+      text-align: left;
+    }
+    .yellow-header {
+      background-color: yellow;
+      text-align: center;
+      padding: 10px;
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .signature {
+      text-align: right;
+      margin-top: 50px;
+    }
+    .item-row {
+      display: flex;
+      gap: 10px;
+    }
+    .item-row input {
+      flex: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Generate Invoice</h1>
+    <div class="form-group">
+      <label>Customer Name</label>
+      <input type="text" id="customerName" />
+    </div>
+    <div class="form-group">
+      <label>Customer Number</label>
+      <input type="text" id="customerNo" />
+    </div>
+    <div class="form-group">
+      <label>Date</label>
+      <input type="date" id="invoiceDate" />
+    </div>
+    <div class="form-group">
+      <label>Items</label>
+      <div id="items"></div>
+      <button type="button" onclick="addItem()">+ Add Item</button>
+    </div>
+    <button onclick="generateInvoice()">Generate</button>
+
+    <div id="invoiceOutput"></div>
+  </div>
+
+  <script>
+    function addItem() {
+      const itemDiv = document.createElement('div');
+      itemDiv.className = 'item-row';
+      itemDiv.innerHTML = `
+        <input type="text" placeholder="Description" class="desc" />
+        <input type="number" placeholder="Amount" class="amt" />
+      `;
+      document.getElementById('items').appendChild(itemDiv);
+    }
+
+    function generateInvoice() {
+      const name = document.getElementById("customerName").value;
+      const number = document.getElementById("customerNo").value;
+      const date = document.getElementById("invoiceDate").value;
+
+      const descriptions = document.querySelectorAll(".desc");
+      const amounts = document.querySelectorAll(".amt");
+
+      let total = 0;
+      let rows = "";
+
+      for (let i = 0; i < descriptions.length; i++) {
+        const desc = descriptions[i].value;
+        const amt = parseFloat(amounts[i].value || 0);
+        if (!desc || isNaN(amt)) continue;
+        total += amt;
+        rows += `<tr><td>${i + 1}</td><td>${desc}</td><td>1</td><td>${amt.toFixed(2)}/-</td></tr>`;
+      }
+
+      const output = `
+        <div class="invoice">
+          <div class="yellow-header">Sameer Cushion Works<br>
+            <small>MO.NO - 9960106266<br>Near Old Theater, Main Road, Marcela Goa.</small>
+          </div>
+          <p><strong>Customer Name :-</strong> ${name}</p>
+          <p><strong>Customer No :-</strong> ${number}</p>
+          <p><strong>Date :-</strong> ${date}</p>
+          <table>
+            <thead>
+              <tr>
+                <th>S.No</th>
+                <th>Description of Goods</th>
+                <th>Qty</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows}
+            </tbody>
+          </table>
+          <p><strong>Total :-</strong> ${total.toFixed(2)}/-</p>
+          <p><strong>Rupees:</strong> ${convertToWords(Math.floor(total))} only</p>
+          <div class="signature">
+            Signature
+          </div>
+        </div>
+      `;
+      document.getElementById("invoiceOutput").innerHTML = output;
+    }
+
+    function convertToWords(num) {
+      const a = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+      const b = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+
+      if (num === 0) return "Zero";
+
+      function inWords(n) {
+        if (n < 20) return a[n];
+        if (n < 100) return b[Math.floor(n / 10)] + (n % 10 !== 0 ? " " + a[n % 10] : "");
+        if (n < 1000) return a[Math.floor(n / 100)] + " Hundred" + (n % 100 !== 0 ? " and " + inWords(n % 100) : "");
+        if (n < 100000) return inWords(Math.floor(n / 1000)) + " Thousand" + (n % 1000 !== 0 ? " " + inWords(n % 1000) : "");
+        if (n < 10000000) return inWords(Math.floor(n / 100000)) + " Lakh" + (n % 100000 !== 0 ? " " + inWords(n % 100000) : "");
+        return inWords(Math.floor(n / 10000000)) + " Crore" + (n % 10000000 !== 0 ? " " + inWords(n % 10000000) : "");
+      }
+
+      return inWords(num);
+    }
+
+    // Add default item row
+    window.onload = () => addItem();
+  </script>
+</body>
+</html>
